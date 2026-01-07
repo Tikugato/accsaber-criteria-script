@@ -6,8 +6,8 @@ from libs.Map import Map
 from libs.CriteriaChecker import RunCriteriaChecks
 
 def main():
-    mapset_path = "examples/414df (i won't run - VoltageO)"
-    diff_str = "ExpertPlus"
+    mapset_path = "examples/failed/3dbbe (RATATATA - Royal)"
+    diff_str = "Hard"
     category = "Standard"
 
     map_object = Map(mapset_path, diff_str, category)

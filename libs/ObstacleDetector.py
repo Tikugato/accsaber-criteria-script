@@ -254,7 +254,7 @@ def RunAllPostBombChecks(map_object):
                 if prev_bomb is not None:
                     is_valid = ValidTimeBeforeNoteAfterBomb(prev_bomb, row)
                     if is_valid == 0:
-                        invalid_times.append(row['b'])
+                        invalid_times.append(row['_time'])
     else:
         df_combined = CombineNotesAndBombs(map_object.initial_bpm, map_object.bpm_changes, df, map_object.dataframe_struct.df_bombs)
         for _, row in df_combined.iterrows():

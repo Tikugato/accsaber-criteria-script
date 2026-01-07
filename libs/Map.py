@@ -86,6 +86,17 @@ def GetBpmChanges(mapset_path, diff_info):
         diff_info.get("_beatsPerMinute")
         or diff_info.get("beatsPerMinute")
     )
+    if fallback_bpm is None:
+        info_path = os.path.join(mapset_path, "Info.dat")
+        if not os.path.exists(info_path):
+            info_path = os.path.join(mapset_path, "info.dat")
+        if os.path.exists(info_path):
+            with open(info_path, encoding="utf-8") as f:
+                info_data = json.load(f)
+            fallback_bpm = info_data.get("_beatsPerMinute")
+
+    if fallback_bpm is None:
+        return pd.DataFrame([])
 
     return pd.DataFrame([{
         "_startBeat": 0.0,

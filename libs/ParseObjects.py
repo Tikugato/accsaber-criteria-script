@@ -14,6 +14,8 @@ def sanitize_notes_df(df, beat_col):
     Sort notes by beat, compute _timeChange, fix negatives, recompute seconds.
     This prevents false slider detection and ensures consistent timing.
     """
+    if df.empty or beat_col not in df.columns:
+        return df
     # Sort by beat
     df = df.sort_values(beat_col).reset_index(drop=True)
 
@@ -257,12 +259,15 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
         last = bpm_changes.iloc[-1]
         return last["_time"] + (beat_value - last[end_col]) * (60 / last["_BPM"])
 
-    for i in range(len(df)):
-        note_seconds = beat_to_seconds(df.loc[i, 'b'])
+    def bpm_for_seconds(note_seconds):
         for j in range(len(bpm_changes)):
             if note_seconds < bpm_changes.loc[j, '_time']:
-                break
-            df.loc[i, '_bpm'] = bpm_changes.loc[j, '_BPM']
+                return bpm_changes.loc[j, '_BPM']
+        return bpm_changes.loc[len(bpm_changes) - 1, '_BPM']
+
+    for i in range(len(df)):
+        note_seconds = beat_to_seconds(df.loc[i, 'b'])
+        df.loc[i, '_bpm'] = bpm_for_seconds(note_seconds)
 
     left = sanitize_notes_df(df[df['c'] == 0].copy(), "b")
     right = sanitize_notes_df(df[df['c'] == 1].copy(), "b")
@@ -282,12 +287,15 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
         df_bombs['_yCenter'] = df_bombs['y'].apply(lambda x: 1 + x * 0.55)
         df_bombs['_xCenter'] = df_bombs['x'].apply(lambda x: -0.9 + x * 0.6)
         df_bombs['_bpm'] = initialBPM
-        for i in range(len(df_bombs)):
-            note_seconds = beat_to_seconds(df_bombs.loc[i, 'b'])
+        def bpm_for_bomb_seconds(note_seconds):
             for j in range(len(df_BPMChanges)):
                 if note_seconds < df_BPMChanges.loc[j, '_time']:
-                    break
-                df_bombs.loc[i, '_bpm'] = df_BPMChanges.loc[j, '_BPM']
+                    return df_BPMChanges.loc[j, '_BPM']
+            return df_BPMChanges.loc[len(df_BPMChanges) - 1, '_BPM']
+
+        for i in range(len(df_bombs)):
+            note_seconds = beat_to_seconds(df_bombs.loc[i, 'b'])
+            df_bombs.loc[i, '_bpm'] = bpm_for_bomb_seconds(note_seconds)
         df_bombs['_timeChange'] = df_bombs['b'].diff().fillna(0)
         df_bombs['_timeChangeSeconds'] = (60 * df_bombs['_timeChange']) / df_bombs['_bpm']
         df_bombs['_seconds'] = df_bombs['_timeChangeSeconds'].cumsum()
