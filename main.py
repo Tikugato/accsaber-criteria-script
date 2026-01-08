@@ -6,7 +6,7 @@ from libs.Map import Map
 from libs.CriteriaChecker import RunCriteriaChecks
 
 def main():
-    mapset_path = "examples/failed/3dbbe (RATATATA - Royal)"
+    mapset_path = "examples/failed/49436 (CASINO RAVE - Miljon)"
     diff_str = "Hard"
     category = "Standard"
 

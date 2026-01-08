@@ -167,7 +167,7 @@ def ValidTimeBeforeBombAfterNote(prev_note, bomb, njs, category):
     Checks if a single (prev_note, bomb) triple satisfies requirements for min time before the bomb after the note
     Returns 1 if it is valid, 0 if not
     """
-    time_diff_ms = (bomb['_seconds'] - prev_note['_seconds']) / 1000
+    time_diff_ms = (bomb['_seconds'] - prev_note['_seconds']) * 1000
     if ((AffectsSwingPath(prev_note, bomb) == 0) and (WithDirPrevSwing(prev_note, bomb) == 0) and (category != "true")):
         # the bomb does not affect swing path and is against against the direction of the previous swing and category is not true acc
         if (time_diff_ms < (1500/njs)):
@@ -196,7 +196,7 @@ def ValidTimeBeforeNoteAfterBomb(prev_bomb, note):
     Checks if a single (bomb, note) pairs satisfies requirements for min time before the note after the bomb
     Returns 1 if it is valid, 0 if not
     """
-    time_diff_ms = (note['_seconds'] - prev_bomb['_seconds']) / 1000
+    time_diff_ms = (note['_seconds'] - prev_bomb['_seconds']) * 1000
     if (time_diff_ms < 150):
         return 0
     else:
@@ -222,7 +222,7 @@ def RunAllPreBombChecks(map_object):
                 if prev_note is not None:
                     is_valid = ValidTimeBeforeBombAfterNote(prev_note, row, map_object.njs, map_object.category)
                     if is_valid == 0:
-                        invalid_times.append(row['b'])
+                        invalid_times.append(row['_time'])
     else:
         df_combined = CombineNotesAndBombs(map_object.initial_bpm, map_object.bpm_changes, df, map_object.dataframe_struct.df_bombs)
         df_modified = AddNextPrevNoteColumns(df_combined, metadata_version)
