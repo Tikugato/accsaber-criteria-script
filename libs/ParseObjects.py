@@ -98,7 +98,7 @@ def BuildObjectsDataFramev2(map_object, bpm_changes, diff_data, initial_bpm):
     df = pd.DataFrame(diff_data['_notes'])
     df['_yCenter'] = df['_lineLayer'].apply(lambda x: 1 + x * 0.55)
     df['_xCenter'] = df['_lineIndex'].apply(lambda x: -0.9 + x * 0.6)
-    df['_bpm'] = initial_bpm
+    df['_bpm'] = float(initial_bpm)
 
     for i in range(len(df)):
         currentTime = df.loc[i, '_time']
@@ -235,7 +235,8 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
     df = pd.DataFrame(diff_data['colorNotes'])
     df['_yCenter'] = df['y'].apply(lambda x: 1 + x * 0.55)
     df['_xCenter'] = df['x'].apply(lambda x: -0.9 + x * 0.6)
-    df['_bpm'] = initial_bpm
+    df['_bpm'] = float(initial_bpm)
+    df['_bpm'] = df['_bpm'].astype(float)
 
     bpm_changes = bpm_changes.sort_values(start_col).reset_index(drop=True)
 
@@ -286,7 +287,8 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
         df_bombs['a'] = 0
         df_bombs['_yCenter'] = df_bombs['y'].apply(lambda x: 1 + x * 0.55)
         df_bombs['_xCenter'] = df_bombs['x'].apply(lambda x: -0.9 + x * 0.6)
-        df_bombs['_bpm'] = initialBPM
+        df_bombs['_bpm'] = float(initialBPM)
+        df_bombs['_bpm'] = df_bombs['_bpm'].astype(float)
         def bpm_for_bomb_seconds(note_seconds):
             for j in range(len(df_BPMChanges)):
                 if note_seconds < df_BPMChanges.loc[j, '_time']:
