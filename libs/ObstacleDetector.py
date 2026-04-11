@@ -82,6 +82,24 @@ def CombineNotesAndBombs(initial_bpm, bpm_changes, df, df_bombs):
 
     return df_combined.sort_values('_seconds').reset_index(drop=True)
 
+def point_to_segment_distance(px, py, x1, y1, x2, y2):
+    """
+    Calculate the distance from a point to a line segment
+    """
+    dx = x2 - x1
+    dy = y2 - y1
+
+    if dx == 0 and dy == 0:
+        return math.sqrt((px - x1)**2 + (py - y1)**2)
+
+    t = ((px - x1)*dx + (py - y1)*dy) / (dx*dx + dy*dy)
+    t = max(0, min(1, t))  # clamp to segment
+
+    proj_x = x1 + t * dx
+    proj_y = y1 + t * dy
+
+    return math.sqrt((px - proj_x)**2 + (py - proj_y)**2)
+
 def AffectsSwingPath(prev_note, bomb):
     """
     Checks if a bomb affects the swing path of the prev_note
@@ -96,33 +114,22 @@ def AffectsSwingPath(prev_note, bomb):
     bombX = bomb['_xCenter']
     bombY = bomb['_yCenter']
     if not math.isnan(prevX):
-        if (curX != prevX):
-            slope = (curY - prevY) / (curX - prevX)
-            numerator = abs((bombX * slope) - bombY + prevY - (prevX * slope))
-            denominator = math.sqrt(1 + (slope * slope))
-            distance = numerator / denominator
-            if (distance < .5):
-                # This swing affects swing path
-                return 1
-        else:
-            # vertical line
-            if (abs(bombX - curX) < .5):
-                # This swing affects swing path
-                return 1
+        distance = point_to_segment_distance(
+            bombX, bombY,
+            prevX, prevY,
+            curX, curY
+        )
+        if distance < 0.5:
+            return 1
     if not math.isnan(nextX):
-        if (nextX != curX):
-            slope = (nextY - curY) / (nextX - curX)
-            numerator = abs((bombX * slope) - bombY + curY - (curX * slope))
-            denominator = math.sqrt(1 + (slope * slope))
-            distance = numerator / denominator
-            if (distance < .5):
-                # This swing affects swing path
-                return 1
-        else:
-            # vertical line
-            if (abs(bombX - curX) < .5):
-                # This swing affects swing path
-                return 1
+        distance = point_to_segment_distance(
+                bombX, bombY,
+                curX, curY,
+                nextX, nextY
+            )
+        if (distance < .5):
+            # This swing affects swing path
+            return 1
     return 0
 
 

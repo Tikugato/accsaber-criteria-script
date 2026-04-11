@@ -7,6 +7,7 @@ import json
 import os
 import pandas as pd
 from libs.MapStatistics import MapStatistics
+from libs.StandardizedDataFrame import BuildStandardizedDataFrame
 
 def DetectMetadataVersion(diff_data):
     """
@@ -188,10 +189,12 @@ class Map:
         self.metadata_version = DetectMetadataVersion(self.diff_data)
         self.logs_list = []
         self.dataframe_struct = None
+        self.standard_df = None
         if (self.metadata_version != "v2" and self.metadata_version != "v3"):
             return
         if (self.metadata_version == "v2"):
             BuildObjectsDataFramev2(self, self.bpm_changes, self.diff_data, self.initial_bpm)
         else:
             BuildObjectsDataFramev3(self, self.mapset_path, self.bpm_changes, self.diff_data, self.initial_bpm)
+        self.standard_df = BuildStandardizedDataFrame(self)
         self.statistics = MapStatistics(self)
