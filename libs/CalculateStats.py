@@ -127,8 +127,7 @@ def GetSectionsViolatingPeakSps(map_object, interval=10):
 
             if current_sps > 1.75:
                 # record the beats involved in this violating window
-                violating_window_beats = beat_list[i : i + interval + 1]
-                violations.append(violating_window_beats)
+                violations.append((i + 1, i + 1 + interval))
     else:
         df_swing = map_object.dataframe_struct.df_new_swing
         swings_with_beats = get_swings_with_beats(df_swing)
@@ -146,7 +145,6 @@ def GetSectionsViolatingPeakSps(map_object, interval=10):
 
             if current_sps > 6.25:
                 # record the beats involved in this violating window
-                violating_window_beats = beat_list[i : i + interval + 1]
-                violations.append(violating_window_beats)
+                violations.append((i + 1, i + 1 + interval))
 
     return violations
