@@ -185,3 +185,5 @@ def RunCriteriaChecks(map_object):
             print(entry)
     else:
         print("This map passed the criteria for the " + str(map_object.category) + " acc category! Make sure the map still passes QAT tests")
+
+    return logs_list
