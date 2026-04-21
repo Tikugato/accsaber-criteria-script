@@ -72,6 +72,13 @@ def GetBpmChanges(mapset_path, diff_info):
         df = pd.DataFrame(diff_info["bpmEvents"])
         df = df.rename(columns=rename_map, errors="ignore")
 
+        # safeguard for v3 maps
+        if not df.empty:
+            if "b" not in df.columns:
+                df["b"] = 0.0
+            else:
+                df["b"] = df["b"].fillna(0)
+
         if not df.empty:
             if "BPM" in df:
                 df["_BPM"] = df["BPM"]
