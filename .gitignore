@@ -3,4 +3,11 @@ accsaber-maps
 .DS_Store
 examples
 libs/__pycache__
+__pycache__
 archive
+venv
+.venv
+*.pyc
+*.egg-info
+dist
+build
