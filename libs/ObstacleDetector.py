@@ -74,7 +74,7 @@ def CombineNotesAndBombs(initial_bpm, bpm_changes, df, df_bombs):
             # use the most recent region
             region = region_df.tail(1).iloc[0]
         startBeat  = region['_startBeat']
-        startTime  = region['_time'] - region['_change_in_time']
+        startTime  = region['_time'] - region.get('_change_in_time', 0)
         bpm        = region['_BPM']
         offset = (b - startBeat) * (60 / bpm)
 
