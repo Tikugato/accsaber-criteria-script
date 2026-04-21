@@ -165,6 +165,12 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
     """
     if bpm_changes is None or len(bpm_changes) == 0:
         df = pd.DataFrame(diff_data['colorNotes'])
+        # safeguard for v3 notes
+        for col in ("b", "x", "y", "c", "d", "a"):
+            if col not in df.columns:
+                df[col] = 0
+            else:
+                df[col] = df[col].fillna(0)
         df['_yCenter'] = df['y'].apply(lambda x: 1 + x * 0.55)
         df['_xCenter'] = df['x'].apply(lambda x: -0.9 + x * 0.6)
         df = sanitize_notes_df(df, "b")
@@ -173,6 +179,12 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
         df['_timeChangeSeconds'] = (60 * df['_timeChange']) / df['_bpm']
         df['_seconds'] = df['_timeChangeSeconds'].cumsum()
         df_bombs = pd.DataFrame(diff_data.get('bombNotes', []))
+        if not df_bombs.empty:
+            for col in ("b", "x", "y"):
+                if col not in df_bombs.columns:
+                    df_bombs[col] = 0
+                else:
+                    df_bombs[col] = df_bombs[col].fillna(0)
         df_bombs = sanitize_notes_df(df_bombs, "b")
         left = sanitize_notes_df(df[df['c'] == 0].copy(), "b")
         right = sanitize_notes_df(df[df['c'] == 1].copy(), "b")
@@ -233,6 +245,12 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
     bpm_changes['_time'] = bpm_changes['_change_in_time'].cumsum()
 
     df = pd.DataFrame(diff_data['colorNotes'])
+    # safeguard for v3 notes
+    for col in ("b", "x", "y", "c", "d", "a"):
+        if col not in df.columns:
+            df[col] = 0
+        else:
+            df[col] = df[col].fillna(0)
     df['_yCenter'] = df['y'].apply(lambda x: 1 + x * 0.55)
     df['_xCenter'] = df['x'].apply(lambda x: -0.9 + x * 0.6)
     df['_bpm'] = float(initial_bpm)
@@ -280,6 +298,13 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
     initialBPM = initial_bpm
     diffData = diff_data
     df_bombs = pd.DataFrame(diffData.get('bombNotes', []))
+    # safeguard for v3 bombs
+    if not df_bombs.empty:
+        for col in ("b", "x", "y"):
+            if col not in df_bombs.columns:
+                df_bombs[col] = 0
+            else:
+                df_bombs[col] = df_bombs[col].fillna(0)
 
     if len(df_bombs) > 0:
         df_bombs['c'] = 3
