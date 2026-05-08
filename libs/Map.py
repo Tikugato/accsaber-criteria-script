@@ -115,7 +115,45 @@ def GetBpmChanges(mapset_path, diff_info):
         "source": "fallback"
     }])
 
-       
+def is_v4_info(info_data):
+    """
+    Returns True if info_data uses the v4 Info.dat schema (flat 'difficultyBeatmaps').
+    """
+    if "_difficultyBeatmapSets" in info_data:
+        return False
+    if "difficultyBeatmaps" in info_data:
+        return True
+    return str(info_data.get("version", "")).startswith("4")
+
+def convert_v4_info_to_v2(info_data):
+    """
+    Converts a v4 Info.dat dict to a v2-shaped dict so the rest of the pipeline
+    (which expects '_difficultyBeatmapSets', '_beatsPerMinute', etc.) keeps working.
+    """
+    converted = dict(info_data)
+    audio = info_data.get("audio", {}) or {}
+    converted.setdefault("_beatsPerMinute", audio.get("bpm"))
+
+    sets = {}
+    for diff in info_data.get("difficultyBeatmaps", []):
+        char = diff.get("characteristic", "Standard")
+        diff_str = diff.get("difficulty", "")
+        v2_diff = {
+            "_difficultyRank": diff_str_to_int(diff_str),
+            "_difficulty": diff_str,
+            "_beatmapFilename": diff.get("beatmapDataFilename"),
+            "_noteJumpMovementSpeed": diff.get("noteJumpMovementSpeed"),
+            "_noteJumpStartBeatOffset": diff.get("noteJumpStartBeatOffset"),
+            "_customData": diff.get("customData", {}),
+        }
+        sets.setdefault(char, []).append(v2_diff)
+
+    converted["_difficultyBeatmapSets"] = [
+        {"_beatmapCharacteristicName": char, "_difficultyBeatmaps": diffs}
+        for char, diffs in sets.items()
+    ]
+    return converted
+
 def get_diff_info_dict(info_data, diff):
     """
     Returns a dictionary of the information contained in the info.dat file that is relevant for this difficulty
@@ -181,6 +219,8 @@ class Map:
             info_path = os.path.join(mapset_path, "info.dat")
         with open(info_path, "r", encoding="utf-8") as f:
             self.info_data = json.load(f)
+        if is_v4_info(self.info_data):
+            self.info_data = convert_v4_info_to_v2(self.info_data)
         self.diff_info = get_diff_info_dict(self.info_data, self.diff)
         if self.diff_info is None:
             raise ValueError("Difficulty metadata not found")
