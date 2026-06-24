@@ -154,6 +154,48 @@ def convert_v4_info_to_v2(info_data):
     ]
     return converted
 
+def is_v4_diff(diff_data):
+    """
+    Returns True if diff_data uses the v4 beatmap schema, where notes are stored as
+    lightweight references ({b, r, i}) into parallel *Data arrays (colorNotesData, etc.).
+    """
+    if "colorNotesData" in diff_data or "bombNotesData" in diff_data:
+        return True
+    return str(diff_data.get("version", "")).startswith("4")
+
+def expand_v4_objects(objects, object_data):
+    """
+    Expands v4 object references into flat v3-shaped objects by merging each reference
+    ({b, r, i}) with the attributes (x, y, c, d, a) stored in its referenced data entry
+    object_data[i]. Objects without a valid index are left as-is so downstream safeguards
+    can fill missing fields.
+    """
+    object_data = object_data or []
+    expanded = []
+    for obj in objects or []:
+        merged = dict(obj)
+        index = obj.get("i")
+        if isinstance(index, int) and 0 <= index < len(object_data):
+            merged.update(object_data[index])
+        merged.pop("i", None)
+        expanded.append(merged)
+    return expanded
+
+def convert_v4_diff_to_v3(diff_data):
+    """
+    Converts a v4 beatmap dict to a v3-shaped dict so the rest of the pipeline (which
+    expects colorNotes/bombNotes to carry x/y/c/d/a inline) keeps working. v4 stores those
+    attributes in colorNotesData/bombNotesData, referenced from each note by index 'i'.
+    """
+    converted = dict(diff_data)
+    converted["colorNotes"] = expand_v4_objects(
+        diff_data.get("colorNotes", []), diff_data.get("colorNotesData", [])
+    )
+    converted["bombNotes"] = expand_v4_objects(
+        diff_data.get("bombNotes", []), diff_data.get("bombNotesData", [])
+    )
+    return converted
+
 def get_diff_info_dict(info_data, diff):
     """
     Returns a dictionary of the information contained in the info.dat file that is relevant for this difficulty
@@ -228,6 +270,8 @@ class Map:
         diff_path = os.path.join(mapset_path, diff_filename)
         with open(diff_path, "r", encoding="utf-8") as f:
             self.diff_data = json.load(f)
+        if is_v4_diff(self.diff_data):
+            self.diff_data = convert_v4_diff_to_v3(self.diff_data)
         self.category = normalize_string(category)
         
         self.njs = self.diff_info["_noteJumpMovementSpeed"]
