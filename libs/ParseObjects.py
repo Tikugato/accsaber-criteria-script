@@ -305,6 +305,7 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
                 df_bombs[col] = 0
             else:
                 df_bombs[col] = df_bombs[col].fillna(0)
+    df_bombs = sanitize_notes_df(df_bombs, "b")
 
     if len(df_bombs) > 0:
         df_bombs['c'] = 3
