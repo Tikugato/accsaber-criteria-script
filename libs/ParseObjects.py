@@ -323,9 +323,9 @@ def BuildObjectsDataFramev3(map_object, mapset_path, bpm_changes, diff_data, ini
         for i in range(len(df_bombs)):
             note_seconds = beat_to_seconds(df_bombs.loc[i, 'b'])
             df_bombs.loc[i, '_bpm'] = bpm_for_bomb_seconds(note_seconds)
+        df_bombs['_seconds'] = df_bombs['b'].apply(beat_to_seconds)
         df_bombs['_timeChange'] = df_bombs['b'].diff().fillna(0)
-        df_bombs['_timeChangeSeconds'] = (60 * df_bombs['_timeChange']) / df_bombs['_bpm']
-        df_bombs['_seconds'] = df_bombs['_timeChangeSeconds'].cumsum()
+        df_bombs['_timeChangeSeconds'] = df_bombs['_seconds'].diff().fillna(0)
 
     df['_timeChange'] = df['b'].diff().fillna(0)
     df['_timeChangeSeconds'] = (60 * df['_timeChange']) / df['_bpm']

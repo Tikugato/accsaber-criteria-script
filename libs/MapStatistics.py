@@ -19,6 +19,10 @@ from libs.CalculateStats import (
     GetNumDoubles,
     GetTrueAccAvgSps,
     HasSliders,
+    GetNumSliders,
+    GetNumOverlapStacks,
+    GetNumTowers,
+    GetNumWindows,
     GetNumNotes,
     GetLeftPeakSps,
     GetRightPeakSps,
@@ -45,6 +49,10 @@ class MapStatistics:
         - number_doubles (int): number of doubles 
         - true_acc_avg_sps (double): avg sps calculation for true acc
         - has_sliders (int): 1 if the map has sliders, 0 otherwise
+        - num_sliders (int): number of slider occurrences
+        - num_overlap_stacks (int): number of same-time same-hand overlap/stack groups
+        - num_towers (int): number of same-time same-hand tower groups
+        - num_windows (int): number of same-time same-hand window groups
         - number_notes (int): number of notes
         - left_peak_sps (double): peak sps of left hand
         - right_peak_sps (double): peak sps of right hand
@@ -74,6 +82,10 @@ class MapStatistics:
             map_object.dataframe_struct.df_left,
             map_object.dataframe_struct.df_right,
         )
+        self.num_sliders = GetNumSliders(map_object)
+        self.num_overlap_stacks = GetNumOverlapStacks(map_object)
+        self.num_towers = GetNumTowers(map_object)
+        self.num_windows = GetNumWindows(map_object)
         self.number_notes = GetNumNotes(map_object)
         self.left_peak_sps = GetLeftPeakSps(map_object)
         self.right_peak_sps = GetRightPeakSps(map_object)

@@ -70,9 +70,31 @@ def TrueAccCriteriaChecks(map_object):
     if (true_acc_avg_sps > 1.5):
         logs_list.append("Fail: the average sps counting doubles as one swing is " + str(true_acc_avg_sps) + " swings per second, which is more than 1.5\n")
 
-    # No stacks, sliders, or windows
-    if (map_object.statistics.number_notes != len(map_object.dataframe_struct.df_new_swing)):
-        logs_list.append("Fail: There are sliders, stacks, towers, or windows in this map\n")
+    overlap_stack_count = map_object.statistics.num_overlap_stacks
+    if (overlap_stack_count > 0):
+        logs_list.append(
+            "Fail: There are "
+            + str(overlap_stack_count)
+            + " same-time same-hand overlap/stack group(s) in this map\n"
+        )
+
+    slider_count = map_object.statistics.num_sliders
+    if (slider_count > 0):
+        logs_list.append(
+            "Fail: There are " + str(slider_count) + " slider note(s) in this map\n"
+        )
+
+    tower_count = map_object.statistics.num_towers
+    if (tower_count > 0):
+        logs_list.append(
+            "Fail: There are " + str(tower_count) + " tower group(s) in this map\n"
+        )
+
+    window_count = map_object.statistics.num_windows
+    if (window_count > 0):
+        logs_list.append(
+            "Fail: There are " + str(window_count) + " window group(s) in this map\n"
+        )
 
     # Min time after notes before bombs: 500ms
     violations = RunAllPreBombChecks(map_object)
@@ -112,8 +134,25 @@ def StandardAccCriteriaChecks(map_object):
         logs_list.append("Fail: the average sps is " + str(avg_sps) + " swings per second, which is more than 4\n")
 
     # No sliders
-    if (map_object.statistics.has_sliders):
-        logs_list.append("Fail: the map has sliders\n")
+    slider_count = map_object.statistics.num_sliders
+    if (slider_count > 0):
+        logs_list.append(
+            "Fail: There are " + str(slider_count) + " slider note(s) in this map\n"
+        )
+
+    # No windows
+    window_count = map_object.statistics.num_windows
+    if (window_count > 0):
+        logs_list.append(
+            "Fail: There are " + str(window_count) + " window group(s) in this map\n"
+        )
+
+    # No towers
+    tower_count = map_object.statistics.num_towers
+    if (tower_count > 0):
+        logs_list.append(
+            "Fail: There are " + str(tower_count) + " tower group(s) in this map\n"
+        )
 
     # Bombs that don't affect swing path and are placed against the 
     # direction of the previous swing will only require y =1500/x 

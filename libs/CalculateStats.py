@@ -4,6 +4,72 @@ This file contains helper functions to calculate map statistics that will be cal
 import math
 EPSILON = 0.059 # Epsilon threshold in ms for detecting when blocks count towards the same swing
 
+
+def _group_same_hand_pattern_counts(df, beat_col, x_col, y_col):
+    counts = {
+        "overlap_stacks": 0,
+        "towers": 0,
+        "windows": 0,
+    }
+    if df is None or df.empty:
+        return counts
+
+    grouped = df.groupby(df[beat_col].round(6), sort=False)
+    for _, group in grouped:
+        if len(group) < 2:
+            continue
+
+        unique_x = group[x_col].nunique(dropna=False)
+        unique_y = group[y_col].nunique(dropna=False)
+
+        if unique_x == 1 and unique_y > 1:
+            sorted_y = sorted(group[y_col].drop_duplicates().tolist())
+            has_vertical_gap = any(
+                (sorted_y[index + 1] - sorted_y[index]) > 1
+                for index in range(len(sorted_y) - 1)
+            )
+
+            if has_vertical_gap:
+                counts["windows"] += 1
+            elif len(sorted_y) >= 3:
+                counts["towers"] += 1
+            else:
+                counts["overlap_stacks"] += 1
+        else:
+            counts["overlap_stacks"] += 1
+
+    return counts
+
+
+def _same_hand_pattern_counts(map_object):
+    if map_object.metadata_version == "v2":
+        beat_col = "_time"
+        x_col = "_lineIndex"
+        y_col = "_lineLayer"
+    else:
+        beat_col = "b"
+        x_col = "x"
+        y_col = "y"
+
+    left_counts = _group_same_hand_pattern_counts(
+        map_object.dataframe_struct.df_left,
+        beat_col,
+        x_col,
+        y_col,
+    )
+    right_counts = _group_same_hand_pattern_counts(
+        map_object.dataframe_struct.df_right,
+        beat_col,
+        x_col,
+        y_col,
+    )
+
+    return {
+        "overlap_stacks": left_counts["overlap_stacks"] + right_counts["overlap_stacks"],
+        "towers": left_counts["towers"] + right_counts["towers"],
+        "windows": left_counts["windows"] + right_counts["windows"],
+    }
+
 def GetLeftSwings(map_object):
     return len(map_object.dataframe_struct.df_new_left_swing)
 
@@ -58,6 +124,22 @@ def HasSliders(map_object, left=None, right=None):
     if (num_sliders > 0):
         return 1
     return 0
+
+
+def GetNumSliders(map_object):
+    return len(map_object.dataframe_struct.df_left_sliders) + len(map_object.dataframe_struct.df_right_sliders)
+
+
+def GetNumOverlapStacks(map_object):
+    return _same_hand_pattern_counts(map_object)["overlap_stacks"]
+
+
+def GetNumTowers(map_object):
+    return _same_hand_pattern_counts(map_object)["towers"]
+
+
+def GetNumWindows(map_object):
+    return _same_hand_pattern_counts(map_object)["windows"]
 
 def GetNumNotes(map_object):
     return len(map_object.dataframe_struct.df_left) + len(map_object.dataframe_struct.df_right)
