@@ -191,7 +191,7 @@ def GetSectionsViolatingPeakSps(map_object, interval=10):
     violations = []
     category = map_object.category
 
-    # Only true acc uses peak SPS limit 1.75
+    # Only true acc uses peak SPS limit 1.5
     if category == "true":
         df_swing = map_object.dataframe_struct.df_ignore_doubles
         swings_with_beats = get_swings_with_beats(df_swing)
@@ -207,7 +207,7 @@ def GetSectionsViolatingPeakSps(map_object, interval=10):
             current_sum = current_sum - sps_list[i] + sps_list[i + interval]
             current_sps = current_sum / interval
 
-            if current_sps > 1.75:
+            if current_sps > 1.5:
                 # record the beats involved in this violating window
                 violations.append((i + 1, i + 1 + interval))
     else:

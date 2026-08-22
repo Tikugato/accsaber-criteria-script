@@ -1,0 +1,77 @@
+name: Build desktop apps
+
+# Builds run automatically when you push a version tag (e.g. v1.0.0),
+# and can also be started by hand from the Actions tab.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            artifact_name: AccSaberRankingChecker-macOS
+          - os: windows-latest
+            artifact_name: AccSaberRankingChecker-Windows
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller accsaber_checker.spec --noconfirm
+
+      - name: Package macOS app
+        if: runner.os == 'macOS'
+        run: |
+          cd dist
+          zip -r -y ../${{ matrix.artifact_name }}.zip AccSaberRankingChecker.app
+
+      - name: Package Windows app
+        if: runner.os == 'Windows'
+        run: |
+          cd dist
+          Compress-Archive -Path AccSaberRankingChecker -DestinationPath ../${{ matrix.artifact_name }}.zip
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}.zip
+
+  # Attaches both zips to a GitHub Release, but only when you pushed a tag.
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*.zip

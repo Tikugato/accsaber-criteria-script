@@ -57,18 +57,18 @@ def TrueAccCriteriaChecks(map_object):
     if (njs > 12):
         logs_list.append("Fail: njs is " + str(njs) + " which is greater than 12\n")
 
-    # Max peak SPS counting doubles as one swing: 1.75
+    # Max peak SPS counting doubles as one swing: 1.5
     true_acc_peak_sps = map_object.statistics.true_acc_peak_sps
-    if (true_acc_peak_sps > 1.75):
-        logs_list.append("Fail: the max peak sps counting doubles as one swing is " + str(true_acc_peak_sps) + " swings per second, which is more than 1.75\n")
+    if (true_acc_peak_sps > 1.5):
+        logs_list.append("Fail: the max peak sps counting doubles as one swing is " + str(true_acc_peak_sps) + " swings per second, which is more than 1.5\n")
         violations = GetSectionsViolatingPeakSps(map_object)
         for entry in violations:
             logs_list.append("Fail: This breaks the true acc peak sps criteria at beat " + str(entry) + " \n")
 
-    # Max average SPS counting doubles as one swing: 1.5
+    # Max average SPS counting doubles as one swing: 1.25
     true_acc_avg_sps = map_object.statistics.true_acc_avg_sps
-    if (true_acc_avg_sps > 1.5):
-        logs_list.append("Fail: the average sps counting doubles as one swing is " + str(true_acc_avg_sps) + " swings per second, which is more than 1.5\n")
+    if (true_acc_avg_sps > 1.25):
+        logs_list.append("Fail: the average sps counting doubles as one swing is " + str(true_acc_avg_sps) + " swings per second, which is more than 1.25\n")
 
     overlap_stack_count = map_object.statistics.num_overlap_stacks
     if (overlap_stack_count > 0):
